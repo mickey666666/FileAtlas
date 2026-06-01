@@ -1,0 +1,13 @@
+/target/
+/target*/
+/build/
+/build*/
+/check_build*/
+/check_tree_build*/
+/clippy_build*/
+/.rust_finder_build_test/
+/.rust_finder/
+*.exe
+*.pdb
+result.csv
+result.json
