@@ -74,6 +74,7 @@ fn execute_command(command: Command, config: &AppConfig, printer: &Printer) -> A
                 context: options.context,
                 case_sensitive: options.case_sensitive,
                 limit: options.limit,
+                jobs: options.jobs,
             };
             let results = engine.search_content(&search_options, &filters)?;
             printer.content_results(&results);

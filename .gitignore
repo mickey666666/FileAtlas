@@ -4,7 +4,9 @@
 /build*/
 /check_build*/
 /check_tree_build*/
+/check_parallel_build*/
 /clippy_build*/
+/clippy_parallel_build*/
 /.rust_finder_build_test/
 /.rust_finder/
 *.exe

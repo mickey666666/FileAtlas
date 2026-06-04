@@ -46,6 +46,7 @@ pub struct GrepOptions {
     pub context: usize,
     pub case_sensitive: bool,
     pub limit: Option<usize>,
+    pub jobs: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -183,6 +184,7 @@ fn parse_grep(parser: &mut ArgParser) -> AppResult<GrepOptions> {
     let mut limit = None;
     let mut context = 0;
     let mut case_sensitive = false;
+    let mut jobs = 1;
     while let Some(arg) = parser.next() {
         match arg.as_str() {
             "--index" => index_path = PathBuf::from(parser.value("--index")?),
@@ -202,6 +204,7 @@ fn parse_grep(parser: &mut ArgParser) -> AppResult<GrepOptions> {
             }
             "--context" | "-C" => context = parse_usize(&parser.value("--context")?, "context")?,
             "--limit" => limit = Some(parse_usize(&parser.value("--limit")?, "limit")?),
+            "--jobs" | "-j" => jobs = parse_usize(&parser.value("--jobs")?, "jobs")?,
             "--sort" => filters.sort_field = parse_sort_field(&parser.value("--sort")?)?,
             "--desc" => filters.sort_direction = SortDirection::Desc,
             "--asc" => filters.sort_direction = SortDirection::Asc,
@@ -219,6 +222,7 @@ fn parse_grep(parser: &mut ArgParser) -> AppResult<GrepOptions> {
         context,
         case_sensitive,
         limit,
+        jobs,
     })
 }
 

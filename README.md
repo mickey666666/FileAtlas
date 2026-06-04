@@ -39,6 +39,12 @@ cargo run -- find README
 cargo run -- grep Rust --text --context 1
 ```
 
+并发搜索文件内容：
+
+```powershell
+cargo run -- grep Result --ext rs --jobs 4 --limit 10
+```
+
 查看统计：
 
 ```powershell

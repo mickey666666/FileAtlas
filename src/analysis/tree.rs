@@ -26,10 +26,10 @@ pub fn build_tree(index: &FileIndex, options: &TreeOptions) -> Vec<String> {
             .path
             .strip_prefix(&index.root)
             .unwrap_or(&record.path);
-        if let Some(base) = &options.root {
-            if !relative.starts_with(base) {
-                continue;
-            }
+        if let Some(base) = &options.root
+            && !relative.starts_with(base)
+        {
+            continue;
         }
         insert_path(&mut root, relative);
     }

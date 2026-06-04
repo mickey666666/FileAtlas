@@ -4,6 +4,7 @@ use crate::model::{ContentMatch, FileIndex, FileRecord};
 use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::thread;
 
 #[derive(Debug, Clone)]
 pub struct SearchEngine {
@@ -56,6 +57,12 @@ impl SearchEngine {
         if options.query.is_empty() {
             return Err(AppError::invalid_arg("grep query cannot be empty"));
         }
+        if options.jobs == 0 {
+            return Err(AppError::invalid_arg("--jobs must be greater than 0"));
+        }
+        if options.jobs > 1 {
+            return self.search_content_parallel(options, filters);
+        }
         let mut matches = Vec::new();
         let matcher = LineMatcher::new(&options.query, options.case_sensitive);
         for record in self
@@ -77,6 +84,67 @@ impl SearchEngine {
         }
         Ok(matches)
     }
+
+    fn search_content_parallel(
+        &self,
+        options: &ContentSearchOptions,
+        filters: &FilterSet,
+    ) -> AppResult<Vec<ContentMatch>> {
+        let records: Vec<(usize, FileRecord)> = self
+            .index
+            .records
+            .iter()
+            .enumerate()
+            .filter(|(_, record)| filters.accepts(record) && record.is_text)
+            .map(|(index, record)| (index, record.clone()))
+            .collect();
+
+        if records.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let jobs = options.jobs.min(records.len());
+        let chunk_size = records.len().div_ceil(jobs);
+        let mut handles = Vec::new();
+
+        for chunk in records.chunks(chunk_size) {
+            let chunk = chunk.to_vec();
+            let query = options.query.clone();
+            let context = options.context;
+            let case_sensitive = options.case_sensitive;
+            handles.push(thread::spawn(
+                move || -> AppResult<Vec<(usize, ContentMatch)>> {
+                    let matcher = LineMatcher::new(&query, case_sensitive);
+                    let mut output = Vec::new();
+                    for (record_index, record) in chunk {
+                        for item in search_file(&record, &matcher, context)? {
+                            output.push((record_index, item));
+                        }
+                    }
+                    Ok(output)
+                },
+            ));
+        }
+
+        let mut collected = Vec::new();
+        for handle in handles {
+            let thread_result = handle
+                .join()
+                .map_err(|_| AppError::invalid_arg("parallel grep worker panicked"))??;
+            collected.extend(thread_result);
+        }
+        collected.sort_by(|left, right| {
+            left.0
+                .cmp(&right.0)
+                .then_with(|| left.1.line_number.cmp(&right.1.line_number))
+        });
+
+        let mut matches: Vec<ContentMatch> = collected.into_iter().map(|(_, item)| item).collect();
+        if let Some(limit) = options.limit {
+            matches.truncate(limit);
+        }
+        Ok(matches)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -85,6 +153,7 @@ pub struct ContentSearchOptions {
     pub context: usize,
     pub case_sensitive: bool,
     pub limit: Option<usize>,
+    pub jobs: usize,
 }
 
 pub trait Matcher<T: ?Sized> {

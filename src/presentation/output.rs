@@ -284,6 +284,7 @@ COMMON FILTERS:
   --sort <field>              path, name, size, modified, ext
   --asc | --desc              Sort direction
   --limit <n>                 Limit number of results
+  --jobs <n>                  Grep only: search files with n worker threads
 
 QUICK START:
   cargo run -- scan .
@@ -310,6 +311,7 @@ GREP EXAMPLES:
   rust_finder grep Result --ext rs
   rust_finder grep Result --path src/main.rs
   rust_finder grep ownership --text -C 2
+  rust_finder grep Result --ext rs --jobs 4 --limit 10
   rust_finder grep FileRecord --ext rs --case-sensitive
 
 LIST EXAMPLES:
@@ -366,7 +368,7 @@ mod tests {
 
     #[test]
     fn wrap_long_text_splits_lines() {
-        assert_eq!(wrap_text("abcdef", 3), vec!["abc", "def"]);
+        assert_eq!(wrap_text("abcdefghijkl", 8), vec!["abcdefgh", "ijkl"]);
     }
 
     #[test]
