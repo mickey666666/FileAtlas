@@ -258,101 +258,128 @@ fn wrap_text(value: &str, width: usize) -> Vec<String> {
 
 pub fn print_help() {
     println!(
-        r#"RustFinder - local file search and content indexing
+        r#"FileAtlas - local file index, content search, and metadata analysis
 
-USAGE:
-  rust_finder scan [path] [--index file]
-  rust_finder find <query> [filters]
-  rust_finder grep <query> [filters] [--context n]
-  rust_finder list [filters]
-  rust_finder stats [--index file]
-  rust_finder tree [path] [--depth n] [--limit n]
-  rust_finder inspect <source-file>
-  rust_finder export <json|csv> <output> [filters]
-  rust_finder shell
+USAGE WITH CARGO:
+  cargo run -- scan [path] [--index file]
+  cargo run -- find <query> [filters]
+  cargo run -- grep <query> [filters] [grep options]
+  cargo run -- list [filters]
+  cargo run -- stats [--index file]
+  cargo run -- tree [path] [--depth n] [--limit n]
+  cargo run -- inspect <source-file>
+  cargo run -- export <json|csv> <output> [filters]
+  cargo run -- shell
 
-COMMON FILTERS:
+COMMANDS:
+  scan       Scan a directory and save a local index
+  find       Search file names and paths
+  grep       Search text file contents
+  list       List indexed files with filters and sorting
+  stats      Show index statistics
+  tree       Show a directory tree from the index
+  inspect    Show lightweight source-code structure hints
+  export     Export indexed file records to CSV or JSON
+  shell      Enter interactive mode
+  help       Show this help message
+
+FILTERS:
   --index <file>              Use a custom index file
   --path <text>               Keep files whose path contains text
-  --ext <ext>                 Keep only one extension; can be repeated
+  --ext <ext>                 Keep one extension; can be repeated
   --min-size <size>           Minimum file size, e.g. 10kb
   --max-size <size>           Maximum file size, e.g. 2mb
   --modified-after <date>     Keep files modified on/after YYYY-MM-DD
   --modified-before <date>    Keep files modified on/before YYYY-MM-DD
   --text                      Keep text files only
   --binary                    Keep binary files only
-  --sort <field>              path, name, size, modified, ext
+  --case-sensitive            Match text with exact case
+  --sort <field>              Sort by path, name, size, modified, or ext
   --asc | --desc              Sort direction
   --limit <n>                 Limit number of results
-  --jobs <n>                  Grep only: search files with n worker threads
 
-QUICK START:
+GREP OPTIONS:
+  --context <n>, -C <n>       Show n lines before and after each match
+  --jobs <n>, -j <n>          Search with n worker threads
+
+QUICK START WITH CARGO:
   cargo run -- scan .
   cargo run -- stats
-  cargo run -- tree
   cargo run -- find README
-  cargo run -- grep Rust --text --context 1
+  cargo run -- list --ext rs --sort size --desc --limit 5
+  cargo run -- grep Result --ext rs --jobs 4 --limit 10
+  cargo run -- tree src --depth 3
+  cargo run -- inspect src/main.rs
+  cargo run -- export csv rust_files.csv --ext rs
   cargo run -- shell
 
 SCAN EXAMPLES:
-  rust_finder scan .
-  rust_finder scan ./src
-  rust_finder scan . --index my_index.rfidx
-  rust_finder scan . --follow-links
+  cargo run -- scan .
+  cargo run -- scan ./src
+  cargo run -- scan . --index my_index.rfidx
+  cargo run -- scan . --follow-links
 
 FIND EXAMPLES:
-  rust_finder find README
-  rust_finder find main --ext rs
-  rust_finder find src --sort modified --desc --limit 5
-  rust_finder find README --case-sensitive
+  cargo run -- find README
+  cargo run -- find main --ext rs
+  cargo run -- find src --sort modified --desc --limit 5
+  cargo run -- find README --case-sensitive
 
 GREP EXAMPLES:
-  rust_finder grep Rust --text
-  rust_finder grep Result --ext rs
-  rust_finder grep Result --path src/main.rs
-  rust_finder grep ownership --text -C 2
-  rust_finder grep Result --ext rs --jobs 4 --limit 10
-  rust_finder grep FileRecord --ext rs --case-sensitive
+  cargo run -- grep Rust --text
+  cargo run -- grep Result --ext rs
+  cargo run -- grep Result --path src/main.rs
+  cargo run -- grep ownership --text -C 2
+  cargo run -- grep Result --ext rs --jobs 4 --limit 10
+  cargo run -- grep FileRecord --ext rs --case-sensitive
 
 LIST EXAMPLES:
-  rust_finder list
-  rust_finder list --ext rs
-  rust_finder list --text
-  rust_finder list --sort size --desc --limit 10
+  cargo run -- list
+  cargo run -- list --ext rs
+  cargo run -- list --text
+  cargo run -- list --sort size --desc --limit 10
 
 STATS EXAMPLES:
-  rust_finder stats
-  rust_finder stats --index my_index.rfidx
+  cargo run -- stats
+  cargo run -- stats --index my_index.rfidx
 
 TREE EXAMPLES:
-  rust_finder tree
-  rust_finder tree src
-  rust_finder tree --depth 3
-  rust_finder tree --depth 4 --limit 8
+  cargo run -- tree
+  cargo run -- tree src
+  cargo run -- tree --depth 3
+  cargo run -- tree --depth 4 --limit 8
 
 INSPECT EXAMPLES:
-  rust_finder inspect src/main.rs
-  rust_finder inspect src/cli.rs
+  cargo run -- inspect src/main.rs
+  cargo run -- inspect src/cli.rs
 
 EXPORT EXAMPLES:
-  rust_finder export csv result.csv
-  rust_finder export json result.json
-  rust_finder export csv files.csv --ext rs
-  rust_finder export csv recent.csv --sort modified --desc --limit 10
+  cargo run -- export csv result.csv
+  cargo run -- export json result.json
+  cargo run -- export csv files.csv --ext rs
+  cargo run -- export csv recent.csv --sort modified --desc --limit 10
 
-SHELL EXAMPLES:
-  rust_finder shell
+SHELL MODE:
+  Start shell mode with:
+  cargo run -- shell
+
+  After entering shell mode, type commands directly.
+  The leading # below is the shell prompt; do not type it.
+
   # scan .
   # stats
-  # tree
-  # tree src
+  # find README
+  # list --ext rs --sort size --desc --limit 5
+  # grep Result --ext rs --jobs 4 --limit 10
+  # tree src --depth 3
   # inspect src/main.rs
+  # export csv rust_files.csv --ext rs
   # exit
 
-WHEN USING CARGO:
-  Add `cargo run --` before the rust_finder command, for example:
-  cargo run -- find README
-  cargo run -- grep Rust --text
+DIRECT BINARY USAGE:
+  After cargo build, you can also run:
+  target\debug\rust_finder.exe help
+  target\debug\rust_finder.exe scan .
 "#
     );
 }
