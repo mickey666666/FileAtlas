@@ -66,6 +66,10 @@ cargo run -- help
 target\debug\rust_finder.exe help
 ```
 
+## 依赖说明
+
+本项目主要基于 Rust 标准库实现，没有额外第三方 crate 依赖。目录扫描、路径处理、文件读写、缓冲读取、集合统计和并发搜索主要使用 `std::fs`、`std::path`、`std::io`、`std::collections` 和 `std::thread` 等标准库模块完成。
+
 ## 快速开始
 
 第一次使用时，需要先扫描目录并建立索引：
